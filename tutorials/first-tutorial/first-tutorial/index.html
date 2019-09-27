@@ -231,9 +231,38 @@
       
     
     
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        First Tutorial
+      </label>
+    
     <a href="./" title="First Tutorial" class="md-nav__link md-nav__link--active">
       First Tutorial
     </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-i-did" class="md-nav__link">
+    What I did
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
     
   </li>
 
@@ -260,6 +289,22 @@
     
   
   
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-i-did" class="md-nav__link">
+    What I did
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -271,10 +316,30 @@
               
                 
                 
-                <h1 id="first-tutorial-introduction-to-ghidra">First Tutorial: Introduction to GHidra</h1>
+                <h1 id="first-tutorial-introduction-to-ghidra">First Tutorial: Introduction to Ghidra</h1>
 <p>Ghidra Version: 9.04</p>
 <p>Youtube tutorial can be found <a href="https://www.youtube.com/watch?v=fTGTnrgjuGA">here</a></p>
-<p>The test code we use for this tutorial is found <a href="https://crackmes.one/crackme/5b8a37a433c5d45fc286ad83">here</a>, the password is <code>crackmes.one</code></p>
+<p>The test code we use for this tutorial is found <a href="https://crackmes.one/crackme/5b8a37a433c5d45fc286ad83">here</a>, the
+password is <code>crackmes.one</code></p>
+<h2 id="what-i-did">What I did</h2>
+<p>Now before doing anything with the file in Ghidra,lets try and run it. Im using virtual box with ubuntu 19.04.</p>
+<pre><code class="bash">$ ./rev50_linux64-bit
+&gt; USAGE: ./rev50_linux64-bit &lt;password&gt;
+&gt; try again!
+</code></pre>
+
+<p>Now we know what our objective is, <strong>Find the password</strong>.</p>
+<ol>
+<li>After creating a project, non-shared, and extracting the crackme file, I dragged the drag the file over into Ghidra.</li>
+<li>This is what my import screen looked like, I didnt change any of the import settings as they where all detected
+   correctly.</li>
+<li>You can read the summary report if you want, none of it matters for this crackme.</li>
+<li>Then drag the file to the funny little green dragon in the top left and experience that very pixelated transition.</li>
+<li>Ghidra will ask if you want to analyze the file, say yes and it will bring up a list of options which you can leave
+   as is <strong>but</strong> add <code>Decompiler parameter ID</code> which we want as according to the description it <code>Creates parameter and
+   local variables for a Function using Decompiler.</code> which sounds very helpful.</li>
+<li>Let Ghidra do its thing, it wont take too long.</li>
+</ol>
                 
                   
                 
