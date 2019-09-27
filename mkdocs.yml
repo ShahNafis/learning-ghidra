@@ -1,0 +1,19 @@
+site_name: Learning Ghidra
+
+
+nav:
+    - Home: index.md
+    - General Notes: general-notes.md
+    - Tutorials:
+      - First Tutorial: tutorials/first-tutorial/first-tutorial.md
+
+theme:
+  name: 'material'
+  logo:
+    icon: 'security'
+  font:
+    text: 'Ubuntu'
+    code: 'Ubuntu Mono'
+  palette:
+    primary: 'deep purple'
+    accent: 'purple'
