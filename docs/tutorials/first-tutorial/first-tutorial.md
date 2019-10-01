@@ -1,5 +1,7 @@
 # First Tutorial: Introduction to Ghidra
 
+🚧🚧🚧🚧🚧 IM NOT DONE YET,STILL IN DEVLOPMENT 🚧🚧🚧🚧🚧
+
 Ghidra Version: 9.04
 
 Youtube tutorial can be found [here](https://www.youtube.com/watch?v=fTGTnrgjuGA)
