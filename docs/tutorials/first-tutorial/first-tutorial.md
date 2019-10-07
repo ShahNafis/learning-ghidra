@@ -18,7 +18,7 @@
 - Make sure Ghidra detects the format and other information correctly.
 - Try and help the decompiler by fixing method signatures and variable
   names/types. Always fix the main method with `int main (int argc, char**
-  argv)`
+  argv)`.
 
 ## What I did
 
