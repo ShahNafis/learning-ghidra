@@ -32,7 +32,7 @@
         <meta name="lang:search.tokenizer" content="[\s\-]+">
       
       <link rel="shortcut icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.4.2">
+      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.4.3">
     
     
       
@@ -250,6 +250,20 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#info" class="md-nav__link">
+    Info
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-information" class="md-nav__link">
+    Key information
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#what-i-did" class="md-nav__link">
     What I did
   </a>
@@ -293,6 +307,20 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#info" class="md-nav__link">
+    Info
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-information" class="md-nav__link">
+    Key information
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#what-i-did" class="md-nav__link">
     What I did
   </a>
@@ -317,13 +345,36 @@
                 
                 
                 <h1 id="first-tutorial-introduction-to-ghidra">First Tutorial: Introduction to Ghidra</h1>
-<p>🚧🚧🚧🚧🚧 IM NOT DONE YET,STILL IN DEVLOPMENT 🚧🚧🚧🚧🚧</p>
+<h2 id="info">Info</h2>
+<ul>
+<li>
 <p>Ghidra Version: 9.04</p>
-<p>Youtube tutorial can be found <a href="https://www.youtube.com/watch?v=fTGTnrgjuGA">here</a></p>
-<p>The test code we use for this tutorial is found <a href="https://crackmes.one/crackme/5b8a37a433c5d45fc286ad83">here</a>, the
-password is <code>crackmes.one</code></p>
+</li>
+<li>
+<p>Youtube tutorial can be found
+  <a href="https://www.youtube.com/watch?v=fTGTnrgjuGA">here</a></p>
+</li>
+<li>
+<p>The test code we use for this tutorial is found
+  <a href="https://crackmes.one/crackme/5b8a37a433c5d45fc286ad83">here</a>, the password is
+  <code>crackmes.one</code></p>
+</li>
+</ul>
+<h2 id="key-information">Key information</h2>
+<ul>
+<li>Make sure Ghidra detects the format and other information correctly.</li>
+<li>Try and help the decompiler by fixing method signatures and variable
+  names/types. Always fix the main method with <code>int main (int argc, char**
+  argv)</code></li>
+</ul>
 <h2 id="what-i-did">What I did</h2>
-<p>Now before doing anything with the file in Ghidra,lets try and run it. Im using virtual box with ubuntu 19.04.</p>
+<p>Now before doing anything with the file in Ghidra,lets try and run it. I have
+Ubuntu 19.04 as dual boot.</p>
+<p>First I have to make it so I can run it</p>
+<pre><code class="bash">sudo chmod a+x rev50_linux64-bit
+</code></pre>
+
+<p>Then running the binary</p>
 <pre><code class="bash">$ ./rev50_linux64-bit
 &gt; USAGE: ./rev50_linux64-bit &lt;password&gt;
 &gt; try again!
@@ -331,16 +382,87 @@ password is <code>crackmes.one</code></p>
 
 <p>Now we know what our objective is, <strong>Find the password</strong>.</p>
 <ol>
-<li>After creating a project, non-shared, and extracting the crackme file, I dragged the drag the file over into Ghidra.</li>
-<li>This is what my import screen looked like, I didnt change any of the import settings as they where all detected
-   correctly.</li>
-<li>You can read the summary report if you want, none of it matters for this crackme.</li>
-<li>Then drag the file to the funny little green dragon in the top left and experience that very pixelated transition.</li>
-<li>Ghidra will ask if you want to analyze the file, say yes and it will bring up a list of options which you can leave
-   as is <strong>but</strong> add <code>Decompiler parameter ID</code> which we want as according to the description it <code>Creates parameter and
+<li>After creating a project, non-shared, and extracting the crackme file, I
+   dragged the drag the file over into Ghidra.</li>
+<li>This is what my import screen looked like, I didnt change any of the import
+   settings as they where all detected correctly. <img alt="Import
+   Settings" src="../import_settings.png" title="Logo Title Text 2" /></li>
+<li>You can read the summary report if you want, none of it matters for this
+   crackme.</li>
+<li>Then drag the file to the funny little green dragon in the top left and
+   experience that very pixelated transition.</li>
+<li>Ghidra will ask if you want to analyze the file, say yes and it will bring up
+   a list of options which you can leave as is <strong>but</strong> add <code>Decompiler parameter
+   ID</code> which we want as according to the description it <code>Creates parameter and
    local variables for a Function using Decompiler.</code> which sounds very helpful.</li>
 <li>Let Ghidra do its thing, it wont take too long.</li>
+<li>Here is a screenshot of the menu. Theres only 2 sections that I think are
+   important because the rest dont make sense to me. The <strong>symbol tree</strong> on the
+   left middle side,and the <strong>decompiler menu</strong> on the right. The symbol tree is
+   used to search for the main function,since every executable C/C++ program
+   needs a main() function. The decompiler menu is important because is <strong>shows
+   the code</strong> which is much better then looking at assembly code.</li>
 </ol>
+<p>So we have to find the password right? Well since we know that every executable
+C/C++ program needs a main() function, why dont we search for that?</p>
+<ol>
+<li>In the symbol tree menu,search for <code>main</code>. Under the <code>functions</code> folder you
+   will see main</li>
+<li>Double click on that and on the right the decompiler menu will show the code.</li>
+<li>But the main() function looks weird, it shows as</li>
+</ol>
+<pre><code class="c">undefined8 main(int param_1,undefined8 *param_2)
+</code></pre>
+
+<p>but should be something like</p>
+<pre><code class="c">int main(int argc, char *argv[])
+</code></pre>
+
+<ol>
+<li>I guess that means we have to replace it. Right click and select <code>Edit
+   Function Signature</code>. Now replace the signature with <code>int main (int argc, char** argv)</code></li>
+<li>Now if you noticed I had <code>char** argv</code> instead of <code>char* argv[]</code>. The reason
+   for this is that Ghidra thinks that <code>argv[]</code> is the name of the parameter, as
+   in it doesnt see the <code>[]</code> as array data type. So adding that extra <code>*</code> tells
+   Ghidra that <code>argv</code> is a pointer to a pointer type data which results in
+   <code>argv</code> being treated as an array.</li>
+<li>So this seems pretty readable now, theres some missiong data types like
+   <code>size_t</code> should probably be a int since all it is doing is saving the length
+   of the string in <code>argv[1]</code>. So right click on the variable and select <code>Rename
+   variable</code> option and give it a name you want.</li>
+<li>We can also fix the type of that variable with <code>Retype variable</code> and put
+   <code>int</code></li>
+</ol>
+<p>The code should look like this now</p>
+<pre><code class="c">int main(int argc,char **argv)
+{
+  int string_length;
+
+  if (argc == 2) {
+    _string_length = strlen(argv[1]);
+    if (_string_length == 10) {
+      if (argv[1][4] == '@') {
+        puts(&quot;Nice Job!!&quot;);
+        printf(&quot;flag{%s}\n&quot;,argv[1]);
+      }
+      else {
+        usage(*argv);
+      }
+    }
+    else {
+      usage(*argv);
+    }
+  }
+  else {
+    usage(*argv);
+  }
+  return 0;
+}
+</code></pre>
+
+<p>So looking at lines 9 and 10 we see that the password has to be length 10,and
+the 5th charater has to be an '@' symbol. So lets try <code>1234@67890</code> as the
+password</p>
                 
                   
                 
@@ -396,7 +518,7 @@ password is <code>crackmes.one</code></p>
       
     </div>
     
-      <script src="../../../assets/javascripts/application.c648116f.js"></script>
+      <script src="../../../assets/javascripts/application.ac79c3b0.js"></script>
       
       <script>app.initialize({version:"1.0.4",url:{base:"../../.."}})</script>
       
