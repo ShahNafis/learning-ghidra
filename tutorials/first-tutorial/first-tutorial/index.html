@@ -32,7 +32,7 @@
         <meta name="lang:search.tokenizer" content="[\s\-]+">
       
       <link rel="shortcut icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.4.3">
+      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.4.2">
     
     
       
@@ -63,10 +63,22 @@
     <link rel="stylesheet" href="../../../assets/fonts/material-icons.css">
     
     
+      <link rel="stylesheet" href="../../../stylesheets/dark_theme.css">
+    
+      <link rel="stylesheet" href="../../../stylesheets/codehilite.css">
+    
     
       
     
     
+<meta name="theme-color" content="#212121">
+
+<link rel='icon' href='/assets/images/favicon.ico'>
+
+<meta name='apple-mobile-web-app-capable' content='yes'>
+<meta name='mobile-web-app-capable' content='yes'>
+<link rel="manifest" href="/manifest.json">
+
   </head>
   
     
@@ -365,7 +377,7 @@
 <li>Make sure Ghidra detects the format and other information correctly.</li>
 <li>Try and help the decompiler by fixing method signatures and variable
   names/types. Always fix the main method with <code>int main (int argc, char**
-  argv)</code></li>
+  argv)</code>.</li>
 </ul>
 <h2 id="what-i-did">What I did</h2>
 <p>Now before doing anything with the file in Ghidra,lets try and run it. I have
@@ -386,7 +398,7 @@ Ubuntu 19.04 as dual boot.</p>
    dragged the drag the file over into Ghidra.</li>
 <li>This is what my import screen looked like, I didnt change any of the import
    settings as they where all detected correctly. <img alt="Import
-   Settings" src="../import_settings.png" title="Logo Title Text 2" /></li>
+   Settings" src="../import_settings.png" title="Import settings" /></li>
 <li>You can read the summary report if you want, none of it matters for this
    crackme.</li>
 <li>Then drag the file to the funny little green dragon in the top left and
@@ -396,18 +408,22 @@ Ubuntu 19.04 as dual boot.</p>
    ID</code> which we want as according to the description it <code>Creates parameter and
    local variables for a Function using Decompiler.</code> which sounds very helpful.</li>
 <li>Let Ghidra do its thing, it wont take too long.</li>
-<li>Here is a screenshot of the menu. Theres only 2 sections that I think are
+<li>
+<p>Here is a screenshot of the menu. Theres only 2 sections that I think are
    important because the rest dont make sense to me. The <strong>symbol tree</strong> on the
    left middle side,and the <strong>decompiler menu</strong> on the right. The symbol tree is
    used to search for the main function,since every executable C/C++ program
    needs a main() function. The decompiler menu is important because is <strong>shows
-   the code</strong> which is much better then looking at assembly code.</li>
-</ol>
-<p>So we have to find the password right? Well since we know that every executable
+   the code</strong> which is much better then looking at assembly code.
+<img alt="code browser" src="../code_browser.png" title="various menus in the code browser" />
+So we have to find the password right? Well since we know that every executable
 C/C++ program needs a main() function, why dont we search for that?</p>
-<ol>
-<li>In the symbol tree menu,search for <code>main</code>. Under the <code>functions</code> folder you
-   will see main</li>
+</li>
+<li>
+<p>In the symbol tree menu,search for <code>main</code>. Under the <code>functions</code> folder you
+   will see main
+   <img alt="searching for main" src="../searching_for_main.png" title="how to find the main() function" /></p>
+</li>
 <li>Double click on that and on the right the decompiler menu will show the code.</li>
 <li>But the main() function looks weird, it shows as</li>
 </ol>
@@ -518,7 +534,7 @@ password</p>
       
     </div>
     
-      <script src="../../../assets/javascripts/application.ac79c3b0.js"></script>
+      <script src="../../../assets/javascripts/application.c648116f.js"></script>
       
       <script>app.initialize({version:"1.0.4",url:{base:"../../.."}})</script>
       
