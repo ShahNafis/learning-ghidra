@@ -1,6 +1,8 @@
 # First Tutorial: Introduction to Ghidra
 
-[import_settings]: ./import_settings.png "Logo Title Text 2"
+[import_settings]: ./import_settings.png "Import settings"
+[code_browser_menus]: ./code_browser.png "various menus in the code browser"
+[searching_for_main]: ./searching_for_main.png "how to find the main() function"
 
 ## Info
 
@@ -61,14 +63,15 @@ Now we know what our objective is, **Find the password**.
    used to search for the main function,since every executable C/C++ program
    needs a main() function. The decompiler menu is important because is **shows
    the code** which is much better then looking at assembly code.
-
+![code browser][code_browser_menus]
 So we have to find the password right? Well since we know that every executable
 C/C++ program needs a main() function, why dont we search for that?
 
-1. In the symbol tree menu,search for `main`. Under the `functions` folder you
+8. In the symbol tree menu,search for `main`. Under the `functions` folder you
    will see main
-2. Double click on that and on the right the decompiler menu will show the code.
-3. But the main() function looks weird, it shows as
+   ![searching for main][searching_for_main]
+9. Double click on that and on the right the decompiler menu will show the code.
+10. But the main() function looks weird, it shows as
 
 ```c
 undefined8 main(int param_1,undefined8 *param_2)
