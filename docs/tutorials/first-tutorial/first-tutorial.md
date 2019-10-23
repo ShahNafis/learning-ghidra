@@ -17,10 +17,10 @@
 
 ## Key information
 
-- Make sure Ghidra detects the format and other information correctly.
+- Make sure Ghidra detects the format and other information correctly when importing a file (Check step #2 ).
 - Try and help the decompiler by fixing method signatures and variable
   names/types. Always fix the main method with `int main (int argc, char**
-  argv)`.
+  argv)`, check step #10.
 
 ## What I did
 
@@ -46,8 +46,9 @@ Now we know what our objective is, **Find the password**.
 1. After creating a project, non-shared, and extracting the crackme file, I
    dragged the drag the file over into Ghidra.
 2. This is what my import screen looked like, I didnt change any of the import
-   settings as they where all detected correctly. ![Import
-   Settings][import_settings]
+   settings as they where all detected correctly.
+
+   ![Import Settings][import_settings]
 3. You can read the summary report if you want, none of it matters for this
    crackme.
 4. Then drag the file to the funny little green dragon in the top left and
