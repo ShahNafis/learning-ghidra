@@ -1,0 +1,39 @@
+#!/bin/sh
+SNMPD="/usr/local/sbin/snmpd"
+#SNMPD="/usr/local/sbin/snmpd"
+SNMPD_CONF="/etc/snmpd.conf,/etc/snmpdv3.conf"
+#SNMPD_CONF="/media/Share/Samba/W1_tool/net-snmp-5.6.1/snmpd.conf"
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+#if [ ! -x $SNMPD ]
+#then
+#	echo $SNMPD "missing."
+#	exit 0
+#fi
+
+#if [ ! -f $SNMPD_CONF ]
+#then
+#	echo $SNMPD_CONF "is not exist..."
+#	exit 0
+#fi
+
+case "$1" in
+start)
+	action $"SNMPD start: " $SNMPD -C -c $SNMPD_CONF &
+;;
+stop)
+	ps -ef | grep snmpd | awk '$8 !~ /grep/ {system("kill -9 " $1)}'
+;;
+restart)
+	$0 stop
+	$0 start
+;;
+reload)
+	ps -ef | grep snmpd | awk '$8 !~ /grep/ {system("kill -HUP " $1)}'
+;;
+*)
+	echo $"Usage: $0 {start|stop|restart|reload}"
+;;
+esac

@@ -1,0 +1,307 @@
+#!/bin/sh
+#
+#  Copyright (c) University of Cambridge, 1993-1996
+#  See the file NOTICE for conditions of use and distribution.
+#
+# Written to simply set the IP stuff up from the
+# bootpc data.
+#
+# Last updated : Mon Sep 23 16:18:30 1996
+#  Jon Peatfield
+#
+# with modifications as suggested by Austin Donnelly, Chris Hall,
+# Donal K Fellows and choltje@ux1.cso.uiuc.edu.
+#
+# Setup of hosts file modified as suggested by Carl Olson
+# <c-olson@uiuc.edu> to get the local IP address right when using some
+# resolver options...
+#
+# $Revision: 1.7 $
+#
+# Release Version 0.64
+#set -x
+
+## The following options are policy decisions you may want to choose
+## for the machines on your site.  i.e. if you don't edit it you get
+## what I use!   -- Jon
+
+# If you prefer FQDN names rather than leafnames set to 'y';
+# This causes the code to ignore the HOSTNAME returned by the BOOTP
+# server and do a gethostbyname() on the IP number we were given.
+# This will only work if the resolver can be set up or you have the
+# correct entry in /etc/hosts (!)
+FORCEFQDN='y'
+
+# If you want to add any extra options to ifconfig (e.g. pointopoint)
+# The first is used before the bootp the 2nd afterwards and is
+# expanded using `eval echo ${IFCONFOPTS2}` so will expand variables
+# then (when they are known) not now.
+##IFCONFOPTS1='mtu 400 pointopoint'
+##IFCONFOPTS2='mtu 400 pointopoint $SERVER'
+
+# Put search not domain line in resolv.conf for 4.9.3 based resolver
+# code (still works with older code too) if you like the old 4.8.3
+# search rules with the new resolver code then set to 'y'
+MAKESEARCH='y'
+
+## YOU MAY NEED TO EDIT THESE FOR DIFFERENT DISTRIBUTIONS
+# Location of the bootpc program
+BOOTPC=/usr/bin/bootpc
+# location of ifconfig
+IFCONFIG=/sbin/ifconfig
+# location of route
+ROUTE=/sbin/route
+# location of hostname binary
+BINHOST=/bin/hostname
+
+## Details of bootp to perform
+# What device to do the bootp on
+DEV=$1
+
+# What address to send bootp request to (broadcast by default)
+ASKSERVER="255.255.255.255"
+
+# To set the time we are willing to wait for a reply (roughly)
+# This defaults to 70 seconds anyway in the code.
+TW="--timeoutwait 15"
+
+# If you want bootpc to exit on failure and take down networking then
+# uncomment these line:
+RIF="--returniffail"
+RIFMESSAGE="Bootp failed -- disabling network."
+
+## Shouldn't change location, but...
+# The location of the resolver config file
+RCONF=/etc/resolv.conf
+# location of the hosts file
+EHOSTS=/etc/hosts
+# location of the local hosts file..
+LHOSTS=/etc/hosts.local
+
+## Location of tmp file for storing options
+TMPFILE=/var/bootp-results.$$
+
+# For testing purposes I uncomment these They probably arn't usefult
+# to you.  -- Jon
+#BOOTPC=./bootpc
+#IFCONFIG='echo ifconfig'
+#ROUTE='echo route'
+#BINHOST='echo hostname'
+#RCONF=/tmp/resolv.conf
+#EHOSTS=/tmp/hosts
+#LHOSTS=/dev/null
+#ASKSERVER="131.111.255.255"
+#TW="--timeoutwait 20"
+## This will fail when testing as we reply to our own PING...
+#set -x
+
+## Start of the functions
+# Stick the nameserver lines in the resolver file.
+setservers() {
+# Insert the DNS servers themselves
+  for i in $1
+  do
+    echo "nameserver $i" >> ${RCONF}
+  done
+}
+
+# A function for setting the DNS stuff if we have all the info
+setresolv() {
+  setservers "$3"
+}
+
+# A function for setting the DNS stuff if we don't know out domainname
+fakeresolv() {
+# This means nothing, but provides a domain line (some(old) revolvers
+#  break if there isn't one present.)
+  setservers "$1"
+}
+
+# And putting the original back if it exists
+unfakeresolv() {
+  [ -f ${RCONF}.fake ] && mv -f ${RCONF}.fake ${RCONF}
+}
+
+# update the DNSSERVERS but not the domainname, in case of
+# reverse lookup failure.
+updateresolv() {
+# Copy over the domainname from the old file
+  setservers "$1"
+}
+
+# Remove the networking by taking down the interface
+netdown() {
+  ${ROUTE} del default
+  ${IFCONFIG} ${DEV} down
+}
+## End of the functions
+
+## Start of the actual work
+# Bring up minimal networking use 0.0.0.0 as our address as we don't
+# know it yet (Means "Me but I don't know my address or network")
+${IFCONFIG} ${DEV} up ${IFCONFOPTS1} 0.0.0.0
+${ROUTE} add default dev ${DEV}
+
+# Perform the bootp  --  doesn't return unless it gets an answer
+echo -n "" > ${RCONF}
+if ${BOOTPC} --dev ${DEV} --server ${ASKSERVER} ${RIF} ${TW} > ${TMPFILE}
+then
+# Take down networking (use the 0.0.0.0 for as short a time as possible)
+  netdown
+# Read in the values
+  eval `cat ${TMPFILE}`
+# And delete the temporary file
+  rm ${TMPFILE}
+else
+# Take down networking (use the 0.0.0.0 for as short a time as possible)
+# netdown
+  ${ROUTE} add default dev ${DEV}
+  if [ ${DEV} = "eth0" ]; then
+      ${IFCONFIG} ${DEV} up ${IFCONFOPTS1} 192.168.126.254
+  elif [ ${DEV} = "br0" ]; then
+      ${IFCONFIG} ${DEV} up ${IFCONFOPTS1} 192.168.126.254
+  else
+      ${IFCONFIG} ${DEV} up ${IFCONFOPTS1} 192.168.127.254
+  fi
+# give message and quit
+  echo ${RIFMESSAGE}
+# Fault LED On here!!!
+  led_tool
+  exit 1
+fi
+
+# Only SERVER and IPADDR are guarenteed by the bootp (assuming
+# It works), so check the rest.
+
+# Start the loopback interface and add a route to it
+${IFCONFIG} lo 127.0.0.1
+${ROUTE} add -net 127.0.0.0
+
+# Setup of IP stuff needs doing first
+#
+if [ -z "${NETMASK}" ] ; then
+
+# No netmask info, all this is guessed from the IP number
+# If this is wrong for your network FIX the bootpd to know
+# what it should send in the RFC1497 cookie!  11/02/94 JSP
+#
+if [ "${BROADCAST}" != "" ]; then
+  ${IFCONFIG} ${DEV} up ${IPADDR} broadcast ${BROADCAST} `eval echo ${IFCONFOPTS2}`
+else
+  ${IFCONFIG} ${DEV} up ${IPADDR} `eval echo ${IFCONFOPTS2}`
+fi
+  ${ROUTE} -n add -net ${NETWORK} dev ${DEV}
+else
+
+# We will have NETMASK, BROADCAST, and NETWORK defined
+  ${IFCONFIG} ${DEV} up ${IPADDR} broadcast ${BROADCAST} netmask ${NETMASK} `eval echo ${IFCONFOPTS2}`
+  ${ROUTE} -n add -net ${NETWORK} dev ${DEV}
+fi
+/etc/rc.d/init.d/getIP.sh 1
+echo "bootp" > /var/run/.sys_dhcpbootp
+#Run IP confilct check
+/etc/rc.d/init.d/start_ipconf_chk.sh &
+# Run ssl_init
+ssl_init &
+
+# Gateways need IP to be able to add the (primary) route.
+#
+if [ -z "${GATEWAYS}" ] ; then
+# No gateways defined
+  echo "No IP gateways defined in rc.bootp setup"
+else
+# First one listed is supposedly our best, so only use it.
+  ( set - ${GATEWAYS} ; ${ROUTE} add default gw ${1} )
+fi
+
+# May need Gateways if the DNS servers are on the other side of the
+# gateways, this needs IP to be up.
+#
+# Can we set up DNS?
+if [ ! -z "${DNSSRVS}" ]; then
+  if [ ! -z "${DOMAIN}" ]; then
+    setresolv "${DOMAIN}" "${SEARCH}" "${DNSSRVS}"
+  else
+# At least we have DNS, so use reverse lookup to get the information
+# Fake the resolver setup to do the reverse lookup.
+    fakeresolv "${DNSSRVS}"
+    eval `${BOOTPC} --in2host ${IPADDR}`
+    unfakeresolv
+    if [ ! -z "${HOSTDOMAIN}" ]; then
+# Got a domain, so use it
+      setresolv "${HOSTDOMAIN}" "${HOSTSEARCH}" "${DNSSRVS}"
+    else
+# We have DNSSRVS but no DOMAIN, and reverse lookup failed
+# If the resolver file is there use it's domainname
+      if [ -f ${RCONF} ] ; then
+					echo "Using old value from /etc/resolve.conf for domain/search"
+					#updateresolv "${DNSSRVS}"
+      else
+        	echo "No BOOTP DOMAIN supplied"
+					echo "  reverse lookup failed"
+					echo "  and no existing resolver file"
+					echo "=>   resolver setup failed"
+      fi
+    fi
+  fi
+else
+  echo "No DNSSRVS supplied, resolver setup not possible"
+fi
+
+# May need DNS lookups if not provided by bootpd
+#
+# Set the hostname from what we got via bootp or reverse lookup
+
+#echo "127.0.0.1	loopback localhost">${EHOSTS}
+
+if [ ! -z "${HOSTNAME}" -a "${FORCEFQDN}" != 'y' ]; then
+  ${BINHOST} "${HOSTNAME}"
+  #echo "${IPADDR}	${HOSTNAME}" >>${EHOSTS}
+else
+  if [ -z "${DONEIN2HOST}" ] ; then
+    eval `${BOOTPC} --in2host ${IPADDR}`
+  fi
+  if [ -z "${FORCEFQDN}" ]; then
+# Use the leafname from the result
+    if [ ! -z "${HOSTLEAF}" ]; then
+      ${BINHOST} "${HOSTLEAF}"
+      #echo "${IPADDR}	${HOSTLEAF} ${HOSTFULL}">>${EHOSTS}
+    fi
+  else
+# Use the FQDN from the result
+    if [ ! -z "${HOSTFULL}" ]; then
+      ${BINHOST} "${HOSTFULL}"
+      #echo "${IPADDR}	${HOSTFULL} ${HOSTLEAF}">>${EHOSTS}
+    fi
+  fi
+fi
+
+# None of this is relevant to IP startup but may be handy for some people
+#
+# Tell them about other info we got back, but don't use it
+# 'cos I'm too lazy to write code for this...
+#
+# Print out a value if present  JSP
+printifhere() {
+  [ ! -z "$2" ] && echo "$1 = $2"
+}
+
+printifhere	TIMESRVS	"${TIMESRVS}"
+printifhere	IEN116SRVS	"${IEN116SRVS}"
+printifhere	LOGSRVS		"${LOGSRVS}"
+printifhere	QODSRVS		"${QODSRVS}"
+printifhere	LPRSRVS		"${LPRSRVS}"
+printifhere	IMPRESSSRVS	"${IMPRESSSRVS}"
+printifhere	RLPSRVS		"${RLPSRVS}"
+printifhere	SWAPSRVR	"${SWAPSRVR}"
+printifhere	BOOTFILE	"${BOOTFILE}"
+printifhere	TIMEOFFSET	"${TIMEOFFSET}"
+printifhere	BOOTSIZE	"${BOOTSIZE}"
+printifhere	YPDOMAIN	"${YPDOMAIN}"
+printifhere	YPSRVR		"${YPSRVR}"
+printifhere	NTPSRVS		"${NTPSRVS}"
+
+
+#
+#
+## End of the main work

@@ -1,0 +1,69 @@
+#!/bin/sh
+
+CONF_FILE=/etc/devsvr/cf_misc.conf
+CONSOLE_FILE=/etc/devsvr/cf_sys.conf
+IPTABLES_ALLOW=/configData/etc/iptable.allow
+IPTABLES_PATH=/sbin/iptables
+
+
+ENABLE=$(cat $CONF_FILE | grep misc_accessible | awk '{print $2}')
+HTTPCON=$(cat $CONSOLE_FILE | grep system_http_console | awk '{print $2}')
+HTTPSCON=$(cat $CONSOLE_FILE | grep system_https_console | awk '{print $2}')
+TELNETCON=$(cat $CONSOLE_FILE | grep system_telnet_console | awk '{print $2}')
+SSHCON=$(cat $CONSOLE_FILE | grep system_ssh_console | awk '{print $2}')
+
+enable_port() {
+	$IPTABLES_PATH -A INPUT -p $1 --dport $2 -j $3
+}
+
+set_port() {
+	ALLOW="ACCEPT"
+	if [ "$1" == "0" ]; then
+		ALLOW="DROP"
+	fi
+	enable_port tcp $2 $ALLOW
+}
+
+$IPTABLES_PATH -F
+$IPTABLES_PATH -X
+$IPTABLES_PATH -Z
+
+set_port $HTTPCON 80
+set_port $HTTPSCON 443
+set_port $TELNETCON 23
+set_port $SSHCON 22
+
+enable_port udp 161 "ACCEPT"
+enable_port tcp 4900 "ACCEPT"
+enable_port udp 4800 "ACCEPT"
+enable_port tcp 25 "ACCEPT"
+enable_port tcp 587 "ACCEPT"
+
+$IPTABLES_PATH -A INPUT -p UDP --dport 53 -j ACCEPT 
+$IPTABLES_PATH -A INPUT -p UDP --sport 53 -j ACCEPT 
+
+$IPTABLES_PATH -A INPUT -p UDP --dport 123 -j ACCEPT 
+$IPTABLES_PATH -A INPUT -p UDP --sport 123 -j ACCEPT 
+
+if [ "$ENABLE" == "0" ]; then
+	$IPTABLES_PATH -P INPUT ACCEPT
+	$IPTABLES_PATH -P OUTPUT ACCEPT
+	exit 1
+fi
+
+$IPTABLES_PATH -P INPUT DROP
+$IPTABLES_PATH -P OUTPUT ACCEPT
+$IPTABLES_PATH -A INPUT -i lo -j ACCEPT
+$IPTABLES_PATH -A INPUT -m state --state RELATED -j ACCEPT
+$IPTABLES_PATH -A INPUT -p icmp -j ACCEPT
+
+if [ ! -f $IPTABLES_ALLOW ]; then
+	exit 1
+fi
+
+RULE=$(cat $IPTABLES_ALLOW | sed 's/#.*//g' | sed '/^$/d'| awk '{print $2}')
+for var in $RULE
+do
+	$IPTABLES_PATH -A INPUT -s $var -j ACCEPT
+done
+

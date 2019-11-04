@@ -1,0 +1,13 @@
+#!/bin/sh
+
+mkdir -p /configData/key
+
+RSA_FILE=/configData/key/ssh_rsa
+if [ ! -f $RSA_FILE ]; then
+    if [ ! -e /dev/urandom ]; then
+        echo "generating /dev/urandom"
+        mknod /dev/urandom c 1 9
+        chmod 660 /dev/urandom
+    fi
+    dropbearkey -t rsa -f $RSA_FILE
+fi

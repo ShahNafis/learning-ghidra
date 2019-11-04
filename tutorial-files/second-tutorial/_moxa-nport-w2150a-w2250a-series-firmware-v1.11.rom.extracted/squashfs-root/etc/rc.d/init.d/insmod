@@ -1,0 +1,22 @@
+#!/bin/sh
+
+MODULE_PATH=/etc/wireless
+MODULE_NAME=ar6000
+
+case "$1" in
+start)
+	wlan_insmod
+#	insmod $MODULE_PATH/$MODULE_NAME.ko fwpath=$MODULE_PATH
+;;
+stop)
+	rmmod $MODULE_NAME
+;;
+restart)
+	$0 stop
+	$0 start
+;;
+*)
+	echo $"Usage: $0 {start|stop|restart}"
+;;
+esac
+

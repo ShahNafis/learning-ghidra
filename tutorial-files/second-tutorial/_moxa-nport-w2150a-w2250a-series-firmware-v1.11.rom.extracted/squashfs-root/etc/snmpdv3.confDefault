@@ -1,0 +1,4 @@
+createUser rouser SHA "12345678" AES "88888888"
+createUser rwuser MD5 "11111111" DES "22222222"
+rwuser rwuser noauth
+rouser rouser noauth

@@ -1,0 +1,68 @@
+#!/bin/sh
+# udhcpc script edited by Tim Riker <Tim@Rikers.org>
+
+RESOLV_CONF="/etc/resolv.conf"
+TEMP_PATH="/var/resolv.conf"
+OLD_IPADDR=`ifconfig | grep 'inet addr:' | grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1 }'`
+
+[ -n "$1" ] || { echo "Error: should be called from udhcpc"; exit 1; }
+
+NETMASK=""
+[ -n "$subnet" ] && NETMASK="netmask $subnet"
+BROADCAST="broadcast +"
+[ -n "$broadcast" ] && BROADCAST="broadcast $broadcast"
+
+case "$1" in
+	deconfig)
+                echo "Setting default IP address on $interface"
+                if [ $interface = "eth0" ]; then
+                    ifconfig $interface 192.168.126.254
+                elif [ $interface = "br0" ]; then
+                    ifconfig $interface 192.168.126.254
+                else
+                    ifconfig $interface 192.168.127.254
+                fi
+                route add default $interface
+                ;;
+	renew|bound)
+		echo "Setting IP address $ip on $interface"
+		ifconfig $interface $ip $NETMASK $BROADCAST
+
+		if [ "$OLD_IPADDR" != "$ip" ] ; then
+	                echo "Run ssl_init"
+        	        ssl_init &
+		fi
+
+		if [ -n "$router" ] ; then
+			echo "Deleting routers"
+			while route del default gw 0.0.0.0 dev $interface ; do
+				:
+			done
+
+			metric=0
+			for i in $router ; do
+				echo "Adding router $i"
+				route add default gw $i dev $interface metric $((metric++))
+			done
+		fi
+
+		echo "Recreating $RESOLV_CONF"
+		echo -n > $TEMP_PATH-$$
+		for i in $dns ; do
+			echo " Adding DNS server $i"
+			echo "nameserver $i" >> $TEMP_PATH-$$
+		done
+		cat $TEMP_PATH-$$ > $RESOLV_CONF
+		rm $TEMP_PATH-$$
+
+		/etc/rc.d/init.d/getIP.sh 1
+		echo "dhcp" > /var/run/.sys_dhcpbootp
+		#Run IP confilct check
+		/etc/rc.d/init.d/start_ipconf_chk.sh &
+		;;
+	leasefail)
+        #eFault LED On here!!!
+        led_tool
+        ;;
+esac
+exit 0

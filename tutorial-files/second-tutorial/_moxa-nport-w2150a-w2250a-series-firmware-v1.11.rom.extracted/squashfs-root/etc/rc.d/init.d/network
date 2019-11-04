@@ -1,0 +1,77 @@
+#!/bin/sh
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+if [ ! -x /sbin/ifconfig ]
+then
+    echo "/sbin/ifconfig missing, unable to configure the network"
+    exit 0
+fi
+
+# set active interface
+#interface=eth0
+
+case "$1" in
+start)
+    if [ -f /etc/sysctl.conf -a -x /sbin/sysctl ]
+    then
+       	echo "Running sysctl"
+        sysctl -p /etc/sysctl.conf >/dev/null 2>&1
+    fi
+
+    # bring up loopback interface
+    action $"Bringing up loopback interface: " ifup lo
+    
+    # bring up ethernet interface
+    action $"Bringing up ethernet interface: " ifconfig eth0 up
+
+    #for i in $interface; do
+
+        #if LANG=C egrep -L "^ONBOOT=['\"]?[Nn][Oo]['\"]?" ${IFCFGPATH}ifcfg-$i > /dev/null ; then
+        #    # this loads the module, to preserve ordering
+        #    continue
+        #fi
+        #action $"Bringing up interface $i: " ifup $i boot
+
+    #done
+
+
+    # Add non interface-specific static-routes.
+    if [ -f /etc/sysconfig/static-routes ]; then
+        grep "^any" /etc/sysconfig/static-routes | while read ignore args ; do
+            /sbin/route add -$args
+        done
+    fi
+
+    # link DNS server profile. (/ect/resolv.conf)
+    if [ ! -f /configData/etc/resolv.conf ]; then
+        touch /configData/etc/resolv.conf
+    fi
+
+
+;;
+stop)
+    for i in $interface; do
+        ifdown $i
+    done
+;;
+
+status)
+    echo $"Configured devices:"
+    echo lo $interfaces
+
+    echo $"Currently active devices:"
+    echo $(/bin/ip -o link show up | awk -F ": " '{ print $2 }')
+;;
+restart|reload|force-reload)
+    cd "$CWD"
+    $0 stop
+    $0 start
+;;
+*)
+    echo $"Usage: $0 {start|stop|status|restart|reload|force-reload}"
+    exit 2
+;;
+esac
+

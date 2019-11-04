@@ -1,0 +1,12 @@
+#
+# /etc/fstab: static file system information
+#
+#
+# file system	mount		type		option		dump	pass
+proc		/proc		proc		defaults	0	0
+devpts		/dev/pts	devpts		gid=5,mode=620	0	0
+sysfs		/sys		sysfs		defaults	0	0
+/dev/mtdblock3	/usr		squashfs	defaults	0	0
+/dev/mtdblock5	/configData	jffs2		defaults	0	0
+/dev/mtdblock4	/mnt		jffs2		defaults	0	0
+tmpfs		/var		tmpfs		size=16M	0	0

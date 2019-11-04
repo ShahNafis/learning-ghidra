@@ -1,0 +1,17 @@
+#!/bin/sh
+
+BINPATH=/etc/wireless/
+KOPATH=/etc/wireless/test/
+
+echo "Start Load Test Driver ..."
+
+ps | grep wpa_supplicant | awk '{printf $1 " "}' | xargs -r kill -9
+ps | grep wpa_conn | awk '{printf $1 " "}' | xargs -r kill -9
+
+MODULE=$(lsmod | grep ar6000 | awk '{print $1}')
+if [ ! "$MODULE" == "" ]; then
+	rmmod $MODULE
+fi
+
+insmod $KOPATH/ar6000.ko fwpath=$BINPATH testmode=1
+

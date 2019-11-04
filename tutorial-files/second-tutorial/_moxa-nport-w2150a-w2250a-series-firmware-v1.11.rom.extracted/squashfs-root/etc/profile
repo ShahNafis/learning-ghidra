@@ -1,0 +1,16 @@
+# /etc/profile: system-wide .profile file for the Bourne shells
+
+echo
+echo -n "Processing /etc/profile... "
+
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/usr/local
+
+alias ll='ls -l'
+alias la='ls -a'
+
+export TZ="/etc/localtime"
+
+# no-op
+echo "Done"
+echo
+

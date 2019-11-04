@@ -1,0 +1,140 @@
+#! /bin/sh
+mkdir -p /var/run
+mkdir -p /var/run/wpa_supplicant
+mkdir -p /var/run/devsvr
+mkdir -p /var/run/ifstate.active
+mkdir -p /var/run/moxa
+mkdir -p /var/log
+
+mkdir -p /configData/etc
+mkdir -p /configData/etc/network
+mkdir -p /configData/etc/devsvr
+
+mkdir -p /configData/wireless
+
+# load the configuration information
+. /etc/rc.d/rc.conf
+
+mode=${1:-start}
+if [ $mode = "start" ]
+then
+	services=$cfg_services
+else
+	services=$cfg_services_r
+fi
+
+cfg_services=${2:-$services}
+
+# run the configured sequence
+for i in $cfg_services
+do
+	if [ -x /etc/rc.d/init.d/$i ]
+	then
+		/etc/rc.d/init.d/$i $mode
+	fi
+done
+
+if [ $# -ge 2 ]
+then
+	exit 0
+fi
+
+
+if [ -x /etc/rc.d/rc.modules ]
+then
+	/etc/rc.d/rc.modules $mode
+fi
+
+if [ -x /etc/rc.d/rc.local ]
+then
+	/etc/rc.d/rc.local $mode
+fi
+
+
+mode=${1:-start}
+if [ $mode = "start" ]
+then
+	services=$cfg_services_step2
+else
+	services=$cfg_services_step2_r
+fi
+
+cfg_services=${2:-$services}
+
+# run the configured sequence
+for i in $cfg_services
+do
+	if [ -x /etc/rc.d/init.d/$i ]
+	then
+		/etc/rc.d/init.d/$i $mode
+	fi
+done
+#echo "ls/mnt"
+#ls /mnt
+if [ ! -f /mnt/log_index ]; then
+	echo "0;0" > /mnt/log_index;
+fi
+# run system daemons.
+echo "Init interface"
+wlan
+
+echo "wlan_logd"
+wlan_logd &
+
+echo "wpa_conn"
+wpa_conn &
+
+# This is for first time generating certificate only.
+# This will invoke web server (webs).
+ssl_init &
+
+# Don't put dropbear to background
+# This is for first time generating RSA key only.
+/etc/rc.d/init.d/dropbear
+
+echo "inetd"
+inetd &
+
+echo "miscd"
+miscd &
+
+echo "wlan_scan"
+wlan_scan &
+
+echo "sds_dscid"
+sds_dscid &
+
+echo "lstatusd"
+lstatusd &
+
+echo "serialconsole"
+serialconsole /dev/ttyM0 &
+
+echo "Wait IP...checking"
+/etc/rc.d/init.d/waitIP.sh
+echo "Wait IP...complete"
+
+echo "telnet 6000"
+telnet_6000 &
+
+echo "eventd"
+eventd &
+
+echo "portd"
+portd -p 1 &
+portd -p 2 &
+
+echo "recEvent"
+#/etc/wireless/recEvent -f /var/log/wireless -b -r /etc/wireless/reset.sh &
+/etc/wireless/recEvent -f /var/log/wireless -b -r /etc/wireless/reset.sh -l 100 &
+
+#/etc/wireless/test/loadTest.sh
+
+echo "bridged"
+bridge -i 1 &
+
+bridge_cmd &
+
+echo 15 > /proc/sys/net/ipv4/tcp_fin_timeout
+
+echo "Done"

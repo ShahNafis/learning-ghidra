@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+# This script will be executed *after* all the other init scripts.
+# You can put your own initialization stuff in here
+
+CHKCFG="passwd shadow network/interfaces snmpd.conf snmpdv3.conf group"
+TOUCHFILE="resolv.conf hosts iptable.allow usertable.allow"
+CONFIG="misc port sys warn wireless"
+case "$1" in
+    start)
+	for i in ${CONFIG}
+	do
+		if [ ! -f /configData/etc/devsvr/cf_${i}.conf ]; then
+			cp -f /etc/default/cf_${i}.conf /configData/etc/devsvr/ ;
+		fi
+	done
+	for i in ${CHKCFG}
+	do
+		if [ ! -f /configData/etc/${i} ]; then
+			cp -f /etc/${i}Default /configData/etc/${i} ;
+		fi
+	done
+	for i in ${TOUCHFILE}
+	do
+		if [ ! -f /configData/etc/${i} ]; then
+			touch /configData/etc/${i} ;
+		fi
+	done
+	if [ ! -f /configData/etc/localtime ]; then
+		cp -f /usr/share/zoneinfo/GMT+0 /configData/etc/localtime ;
+	fi
+    ;;
+    stop)
+    ;;
+    *)
+        echo "Usage: /etc/rc.d/init.d/rc.local {start|stop}"
+        echo
+        exit 1
+    ;;
+esac
+exit 0
