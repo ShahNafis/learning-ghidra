@@ -20,6 +20,10 @@ theme:
     primary: 'deep purple'
     accent: 'purple'
 
+markdown_extensions:
+  - codehilite:
+      linenums: true
+
 extra_css:
   - stylesheets/dark_theme.css
   - stylesheets/codehilite.css

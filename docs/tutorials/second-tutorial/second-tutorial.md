@@ -180,4 +180,51 @@ The method signature shoudl look like this
 `void ecb128Decrypt(uchar *param_1,uchar *param_2,int param_3,char *decrypt_key)`
 - Lets call `param_1` as `decrpyt_in` and `param_2` as `decrpy_out`
 - Lets go ahead and call `iVar1` `loop_counter`
-- 
+- Lets call `param_3` the `decrypt_size`
+
+At the end we get this
+
+```c
+void ecb128Decrypt(uchar *decrpy_in,uchar *decrypt_out,int decrypt_size,char *decrypt_key)
+{
+  int loop_counter;
+  uchar *out;
+  uchar *in;
+  AES_KEY aes_key;
+  uchar userKey [20];
+  
+  strncpy((char *)userKey,decrypt_key,0x10);
+  AES_set_decrypt_key(userKey,128,&aes_key);
+  in = decrpy_in + 0x28;
+  out = decrypt_out + 0x28;
+  loop_counter = 0;
+  while (loop_counter < decrypt_size + -0x28) {
+    AES_ecb_encrypt(in,out,&aes_key,0);
+    loop_counter = loop_counter + 0x10;
+    in = in + 0x10;
+    out = out + 0x10;
+  }
+  memcpy(decrypt_out,decrpy_in,0x28);
+  decrypt_out[0xe] = '\0';
+  return;
+}
+```
+
+We have a function that given the area to decrpy, and the output size and key will decrypt that area.
+
+Now lets go back to `fw_decrypt`
+
+### Back to fw_decrypt
+
+Starting at line 36 we see where `ecb128Decrypt` is called
+
+lets retype the `param_1` back to `uchar *` first. We notice that the first two
+parameters are the same, so that means that the firmware is decrypted in place,
+so it decrypts it self.
+
+- Lets rename `param_1` to `fw_buff`
+- Lets change `param_2` to `fw_buff_size`
+
+On line 15 we see a if statment where there is this variable called `uVar2`,
+which if we look around is the return value. Let change the `uint` on line 6 to
+`int` we see decimal values. Lets rename `local_r0_24` to `return_value`
