@@ -8,6 +8,8 @@
 
 [call_graph]: ./call_graph.png "Call Graph"
 
+[de_entropy]: ./de_entropy.png "Decrpyted entropy"
+
 ## Info
 
 - Ghidra Version: 9.1
@@ -228,3 +230,83 @@ so it decrypts it self.
 On line 15 we see a if statment where there is this variable called `uVar2`,
 which if we look around is the return value. Let change the `uint` on line 6 to
 `int` we see decimal values. Lets rename `local_r0_24` to `return_value`
+
+- Lets edit the method return type to `int`
+
+On line 26 we see something that looks alot like the password, so lets call it `password`
+
+We see that theres some XOR going on.
+
+This next part is rather difficult to explain without a video, just know we are
+trying to reimpliment this in python, and we need to copy the byte code of the
+password. If you want to follow the video for this part, click
+[here](https://youtu.be/4urMITJKQQs?t=590) for the timestamp.
+
+Here is the python code that we have
+
+
+```python
+passwd=[0x95, 0xb3, 0x15, 0x32, 0xe4, 0xe4, 0x43, 0x6b, 0x90, 0xbe, 0x1b, 0x31, 0xa7, 0x8b, 0x2d, 0x05]
+
+i =0
+
+while(i <len(passwd)):
+    passwd[i] ^= 0Xa7
+    passwd[i+1] ^= 0x8b
+    passwd[i+2] ^= 0x2d
+    passwd[i+3] ^= 5
+    i += 4
+
+for c in passwd:
+    print(chr(c),end="")
+print("")
+
+for c in passwd:
+    print(hex(c)[2:],end="")
+print("")
+```
+
+and running
+
+```bash
+ython3 fw_decrypt_key.py 
+```
+
+we get the output
+
+```
+2887Conn7564
+```
+
+Hey,thats the key, wowe.
+
+The hex key is `32383837436f6e6e373536340000`
+
+### Time to decrypt
+
+With the hex key of `32383837436f6e6e373536340000` and the fact that Ubuntu has
+openssl with the ability to decrypt aes-128-ecb, lets go ahead and try that
+
+However, there was a offset,which was 0x28 which is 40 in decimal
+
+So we need that offset removed, simply run
+
+```bash
+dd if=moxa-nport-w2150a-w2250a-series-firmware-v2.2.rom of=firmware_offset.encrypted bs=1 skip=40
+```
+
+to get that.
+
+Now lets decrpyt that file with
+
+```bash
+openssl aes-128-ecb -d -K "32383837436f6e6e373536340000" -in firmware_offset.encrypted -out firmware.decrypted
+```
+
+ignore the warning.
+
+Now lets run binwalk and we see that we can see the file structure
+
+Then if we check the entropy we see that its much different from before.
+
+![Entropy of file][de_entropy]
