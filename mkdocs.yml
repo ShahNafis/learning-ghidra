@@ -7,6 +7,7 @@ nav:
     - Tutorials:
       - First Tutorial: tutorials/first-tutorial/first-tutorial.md
       - Second Tutorial: tutorials/second-tutorial/second-tutorial.md
+      - FindCrypt: tutorials/findCrypt/findCrypt.md
 
 theme:
   name: 'material'
@@ -21,15 +22,17 @@ theme:
     accent: 'purple'
 
 markdown_extensions:
+  - pymdownx.superfences
   - admonition
   - codehilite:
+      linenums: true
       guess_lang: False
       use_pygments: True
-      noclasses: True
+      #noclasses: True
       pygments_style: monokai
       
 
 extra_css:
-  - stylesheets/extra.css
-  # - stylesheets/dark_theme.css
-  # - stylesheets/codehilite.css
+  # - stylesheets/extra.css
+  - stylesheets/dark_theme.css
+  - stylesheets/codehilite.css
