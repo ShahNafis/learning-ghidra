@@ -21,9 +21,15 @@ theme:
     accent: 'purple'
 
 markdown_extensions:
+  - admonition
   - codehilite:
-      linenums: true
+      guess_lang: False
+      use_pygments: True
+      noclasses: True
+      pygments_style: monokai
+      
 
 extra_css:
-  - stylesheets/dark_theme.css
-  - stylesheets/codehilite.css
+  - stylesheets/extra.css
+  # - stylesheets/dark_theme.css
+  # - stylesheets/codehilite.css
